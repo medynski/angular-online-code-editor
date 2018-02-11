@@ -1,0 +1,12 @@
+<div class="user-select"
+  #tooltipRef
+  [innerHtml]="content"
+  [ngClass]="{
+    'left': direction === 'left',
+    'top': direction === 'top',
+    'right': direction === 'right',
+    'bottom': direction === 'bottom',
+    'trigger-click': trigger === 'click',
+    'trigger-hover': trigger === 'hover'
+  }">
+  </div>

@@ -1,0 +1,77 @@
+:host >>> small {
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+}
+
+:host >>> .link-white {
+  color: #fff;
+}
+
+div {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #000;
+  border-radius: 4px;
+  color: #fff;
+  padding: 9px 12px 8px;
+  font-size: 12px;
+  line-height: 12px;
+  z-index: 1007;
+  opacity: 0;
+  word-break: break-all;
+  text-align: center;
+  min-width: 40px;
+}
+
+div.left,
+div.right {
+  max-width: 460px;
+}
+
+div.top,
+div.bottom {
+  max-width: 280px;
+}
+
+div.trigger-hover {
+  animation: fadeInDelay 1s;
+}
+
+div.trigger-click {
+  animation: fadeIn 0.5s;
+}
+
+div:after {
+  content: '';
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-style: solid;
+  border-width: 5px;
+}
+
+div.left:after {
+  top: calc(50% - 5px);
+  right: -10px;
+  border-color: transparent transparent transparent #000;
+}
+
+div.top:after {
+  bottom: -10px;
+  right: calc(50% - 5px);
+  border-color: #000 transparent transparent transparent;
+}
+
+div.right:after {
+  top: calc(50% - 5px);
+  left: -10px;
+  border-color: transparent #000 transparent transparent;
+}
+
+div.bottom:after {
+  top: -10px;
+  right: calc(50% - 5px);
+  border-color: transparent transparent #000 transparent;
+}
