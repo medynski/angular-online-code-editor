@@ -1,19 +1,19 @@
-import { LoaderComponent } from './loader.component';
+import { ListComponent } from './../../../list/list.component';
 import { TestBed, async } from '@angular/core/testing';
 
-describe('LoaderComponent', () => {
+describe('ListComponent', () => {
   beforeEach(
     async(() => {
       TestBed.configureTestingModule({
-        declarations: [LoaderComponent]
+        declarations: [ListComponent]
       }).compileComponents();
     })
   );
 
   it(
-    'should create the LoaderComponent',
+    'should create the ListComponent',
     async(() => {
-      const fixture = TestBed.createComponent(LoaderComponent);
+      const fixture = TestBed.createComponent(ListComponent);
       const cmp = fixture.debugElement.componentInstance;
       expect(cmp).toBeTruthy();
     })

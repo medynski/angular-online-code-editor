@@ -1,42 +1,9 @@
-<div class="online-users">
-  <div class="left">
-    <icon-component name="change_history"
-                    size="48"></icon-component>
-  </div>
-  <div class="right">
-    <icon-component name="supervisor_account"></icon-component>
-    <span>{{socketService.onlineUsers$ | async}}</span>
-  </div>
+<div class="container">
+
+  <left-sidebar></left-sidebar>
+  <list-component></list-component>
+
+  <document-component></document-component>
 </div>
 
-<div class="wrapper">
-  <div tooltip="Document can't be edited when the lock is closed."
-       [tooltipDirections]="['left']"
-       class="icon icon-lock">
-    <icon-component *ngIf="readOnly; else lockOpen"
-                    name="lock"
-                    class="red"></icon-component>
-
-    <ng-template #lockOpen>
-      <icon-component name="lock_open"
-                      class="green"></icon-component>
-    </ng-template>
-  </div>
-
-  <div *ngIf="saving, else saved"
-       class="icon icon-loading">
-    <loader-component></loader-component>
-  </div>
-  <ng-template #saved>
-    <div (click)="save()"
-         tooltip="Save document"
-         class="icon icon-save">
-      <icon-component name="save"></icon-component>
-    </div>
-  </ng-template>
-
-  <monaco-editor #monacoRef
-                 *ngIf="value !== null"
-                 [value]="value"
-                 (changesEmitter)="handleChanges($event)"></monaco-editor>
-</div>
+<footer-component [users]="socketService.onlineUsers$ | async"></footer-component>

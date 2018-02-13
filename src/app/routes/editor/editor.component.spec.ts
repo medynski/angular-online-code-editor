@@ -1,3 +1,7 @@
+import { DocumentComponent } from './components/document/document.component';
+import { ListComponent } from './../list/list.component';
+import { FooterComponent } from './components/footer/footer.component';
+import { LeftSidebarComponent } from './components/left-sidebar/leftSidebar.component';
 import { LoaderComponent } from './../../components/loader/loader.component';
 import { TooltipDirective } from './../../directives/tooltip.directive';
 import { IconComponent } from './../../components/icon/icon.component';
@@ -5,17 +9,8 @@ import { SocketService } from './services/socket.service';
 import { EditorComponent } from './editor.component';
 import { TestBed, async } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MonacoEditorComponent } from './components/monaco-editor/monacoEditor.component';
-import { EventEmitter } from '@angular/core';
-
-const socketServiceMock = {
-  socketEvents$: new EventEmitter<string>(),
-  onlineUsers$: new EventEmitter<number>(),
-  sendTypingIndicator: value => null,
-  saveContent: value => null,
-  getContent: () =>
-    new Promise((resolve: Function, reject: Function) => resolve())
-};
+import { MonacoEditorComponent } from './components/document/monaco-editor/monacoEditor.component';
+import { socketServiceMock } from './services/socket.service.mock';
 
 describe('EditorComponent', () => {
   beforeEach(
@@ -26,7 +21,11 @@ describe('EditorComponent', () => {
           MonacoEditorComponent,
           IconComponent,
           TooltipDirective,
-          LoaderComponent
+          LoaderComponent,
+          LeftSidebarComponent,
+          FooterComponent,
+          ListComponent,
+          DocumentComponent
         ],
         imports: [RouterTestingModule],
         providers: [{ provide: SocketService, useValue: socketServiceMock }]

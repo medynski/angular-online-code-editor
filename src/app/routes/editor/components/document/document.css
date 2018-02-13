@@ -1,0 +1,41 @@
+.document {
+  position: relative;
+  float: left;
+  height: 100%;
+  width: calc(100% - 356px);
+  overflow: hidden;
+  border-top: 10px solid #1e1e1e;
+  background-color: #1e1e1e;
+  box-sizing: border-box;
+}
+
+.icon {
+  position: absolute;
+  z-index: 2;
+  bottom: 10px;
+  color: #fff;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-lock {
+  right: 10px;
+}
+
+.icon-lock .green {
+  color: rgb(44, 188, 22);
+}
+
+.icon-lock .red {
+  color: rgb(198, 25, 30);
+}
+
+.icon-save,
+.icon-loading {
+  left: 10px;
+}
+
+.icon-save:hover {
+  cursor: pointer;
+  color: #007ad3;
+}

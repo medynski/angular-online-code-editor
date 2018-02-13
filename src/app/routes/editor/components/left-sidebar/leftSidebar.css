@@ -1,0 +1,23 @@
+.left-sidebar {
+  background-color: #333333;
+  padding: 10px;
+  color: #fff;
+  height: 100%;
+  width: 56px;
+  float: left;
+  box-sizing: border-box;
+}
+
+.left-sidebar .logo {
+  height: 33px;
+  border-bottom: 3px solid #adadad;
+}
+
+.left-sidebar .logo:hover {
+  border-bottom: 3px solid #007ad3;
+  -webkit-transition: all 0.5s ease-in;
+  -moz-transition: all 0.5s ease-in;
+  -ms-transition: all 0.5s ease-in;
+  -o-transition: all 0.5s ease-in;
+  transition: all 0.5s ease-in;
+}
