@@ -1,16 +1,15 @@
 footer {
-  font-size: 12px;
+  font-size: 10px;
   position: relative;
   color: #fff;
   text-align: right;
-  padding-top: 1px;
-  height: 21px;
+  height: 19px;
   box-sizing: border-box;
 }
 
 footer span {
   position: relative;
-  top: -4px;
+  top: -5px;
   margin-right: 10px;
   margin-left: 5px;
 }

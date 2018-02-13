@@ -1,9 +1,6 @@
 <div class="container">
-
   <left-sidebar></left-sidebar>
   <list-component></list-component>
-
   <document-component></document-component>
 </div>
-
 <footer-component [users]="socketService.onlineUsers$ | async"></footer-component>
