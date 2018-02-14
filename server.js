@@ -33,11 +33,12 @@ app.get('*', (req, res) =>
 );
 
 io.on('connection', socket => {
-  const onlineUsers = roomId => io.sockets.adapter.rooms[roomId].length;
+  const onlineUsers = roomId =>
+    io.sockets.adapter.rooms[roomId] && io.sockets.adapter.rooms[roomId].length
+      ? io.sockets.adapter.rooms[roomId].length
+      : 0;
 
-  socket.on(GET_ONLINE_USERS, (roomId, ackFn) =>
-    ackFn(io.sockets.adapter.rooms[roomId].length)
-  );
+  socket.on(GET_ONLINE_USERS, (roomId, ackFn) => ackFn(onlineUsers(roomId)));
 
   socket.on(JOIN_ROOM, (roomId, ackFn) => {
     socket.join(roomId);
