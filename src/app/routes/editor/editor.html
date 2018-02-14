@@ -1,6 +1,10 @@
 <div class="container">
-  <left-sidebar></left-sidebar>
-  <list-component></list-component>
+  <left-sidebar (createStateEmitter)="changeCreateState($event)"
+                (searchStateEmitter)="changeSearchState($event)"></left-sidebar>
+
+  <list-component [isCreateActive]="isCreateActive"
+                  [isSearchActive]="isSearchActive"></list-component>
+
   <document-component></document-component>
 </div>
 <footer-component [users]="socketService.onlineUsers$ | async"></footer-component>

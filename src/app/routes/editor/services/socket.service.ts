@@ -1,10 +1,11 @@
 import { Subscription } from 'rxjs/Subscription';
 import { environment } from './../../../../environments/environment';
-import * as io from 'socket.io-client';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
-import 'rxjs/add/observable/fromEvent';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Utils } from '../../../common/utils';
+import * as io from 'socket.io-client';
+import 'rxjs/add/observable/fromEvent';
 
 const TYPING_INDICATOR = 'typing_indicator';
 const ONLINE_USERS = 'online_users';
@@ -13,40 +14,33 @@ const SAVE_CONTENT = 'save_content';
 const GET_CONTENT = 'get_content';
 const JOIN_ROOM = 'join_room';
 const CREATE_ROOM = 'create_room';
+const GET_ROOM_LIST = 'get_room_list';
+const LEAVE_ROOM = 'leave_room';
+
+interface Rooms {
+  readonly id: string;
+  readonly name: string;
+}
 
 export class SocketService {
   socketEvents$ = new Observable<string>();
   onlineUsers$ = new Subject<number>();
+  rooms$ = new BehaviorSubject<Array<Rooms>>(new Array());
   private _socket: any;
   private _subscription: Subscription;
   private _roomId = 'code';
 
   constructor() {
-    this._socket = io.connect(environment.apiUrl, {
-      transports: environment.socketIoTransport,
-      reconnection: true
-    });
+    this._openConnection();
+  }
 
-    // join room
-    this._emit(JOIN_ROOM, this._roomId);
+  selectRoom(roomId: string): void {
+    this._emit(LEAVE_ROOM, this._roomId, () => this.joinRoom(roomId));
+  }
 
-    // get online users
-    this._emit(GET_ONLINE_USERS, this._roomId, (onlineUsers: number) =>
-      this.onlineUsers$.next(onlineUsers)
-    );
-
-    this._emit(
-      CREATE_ROOM,
-      { roomId: Utils.generateRandomString(), roomName: this._roomId },
-      console.info
-    );
-
-    // handle socket messages
-    this.socketEvents$ = Observable.fromEvent(this._socket, TYPING_INDICATOR);
-    this._subscription = Observable.fromEvent(
-      this._socket,
-      ONLINE_USERS
-    ).subscribe((onlineUsers: number) => this.onlineUsers$.next(onlineUsers));
+  joinRoom(roomId: string): void {
+    this._emit(JOIN_ROOM, roomId);
+    this._roomId = roomId;
   }
 
   sendTypingIndicator(message: string): void {
@@ -65,7 +59,7 @@ export class SocketService {
     });
   }
 
-  destroy(): void {
+  closeConnection(): void {
     if (this._subscription) {
       this._subscription.unsubscribe();
     }
@@ -73,6 +67,38 @@ export class SocketService {
     if (this._socket.connected) {
       this._socket.disconnect();
     }
+  }
+
+  fetchOnlineUsers(): void {
+    this._emit(GET_ONLINE_USERS, this._roomId, (onlineUsers: number) =>
+      this.onlineUsers$.next(onlineUsers)
+    );
+  }
+
+  createRoom(name: string): void {
+    this._emit(CREATE_ROOM, name, () => this.fetchRoomList());
+  }
+
+  fetchRoomList(): void {
+    this._emit(GET_ROOM_LIST, {}, rooms => this.rooms$.next(rooms));
+  }
+
+  private _openConnection(): void {
+    this._socket = io.connect(environment.apiUrl, {
+      transports: environment.socketIoTransport,
+      reconnection: true
+    });
+
+    this.joinRoom(this._roomId);
+    this.fetchOnlineUsers();
+    this.fetchRoomList();
+
+    // handle socket messages
+    this.socketEvents$ = Observable.fromEvent(this._socket, TYPING_INDICATOR);
+    this._subscription = Observable.fromEvent(
+      this._socket,
+      ONLINE_USERS
+    ).subscribe((onlineUsers: number) => this.onlineUsers$.next(onlineUsers));
   }
 
   private _emit(

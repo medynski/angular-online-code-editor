@@ -8,3 +8,17 @@ body {
   padding: 0;
   background-color: #007ad3;
 }
+
+* {
+  outline: none;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul li {
+  display: block;
+}

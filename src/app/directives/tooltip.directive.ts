@@ -13,13 +13,14 @@ import {
   ElementRef,
   ChangeDetectorRef,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  OnDestroy
 } from '@angular/core';
 
 @Directive({
   selector: '[tooltip]'
 })
-export class TooltipDirective implements AfterViewInit, OnChanges {
+export class TooltipDirective implements AfterViewInit, OnChanges, OnDestroy {
   @Input() tooltip: string;
   @Input() tooltipDirections = new Array<DirectionConst>('right');
   @Input() tooltipOffset = 10;
@@ -37,7 +38,7 @@ export class TooltipDirective implements AfterViewInit, OnChanges {
     private _changeDetectorRef: ChangeDetectorRef
   ) {}
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     this._injectTooltipComponent();
     this._subscriptions.push(
       Observable.timer(500).subscribe(() =>
@@ -46,11 +47,17 @@ export class TooltipDirective implements AfterViewInit, OnChanges {
     );
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
     const tooltipDisplay = changes.tooltipDisplay;
     if (tooltipDisplay && this._tooltipRef) {
       this._tooltipRef.display = tooltipDisplay.currentValue;
     }
+  }
+
+  ngOnDestroy(): void {
+    this._subscriptions.forEach((subscription: Subscription) =>
+      subscription.unsubscribe()
+    );
   }
 
   private _injectTooltipComponent(): void {

@@ -2,4 +2,12 @@
   <div class="header">
     Editors
   </div>
+
+  <create-component *ngIf="isCreateActive"></create-component>
+  <search-component *ngIf="isSearchActive"></search-component>
+
+  <ul>
+    <li *ngFor="let item of socketService.rooms$ | async"
+        routerLink="/room/{{item.id}}">{{item.name}}</li>
+  </ul>
 </div>

@@ -12,7 +12,9 @@ const GET_ONLINE_USERS = 'get_online_users';
 const SAVE_CONTENT = 'save_content';
 const GET_CONTENT = 'get_content';
 const JOIN_ROOM = 'join_room';
+const LEAVE_ROOM = 'leave_room';
 const CREATE_ROOM = 'create_room';
+const GET_ROOM_LIST = 'get_room_list';
 
 // @TODO: move redis config to a separated configuration file
 const redisConfig = {
@@ -26,13 +28,9 @@ const rooms = [];
 
 app.use('/', express.static(path.resolve(__dirname, './dist')));
 
-app.get('*', (req, res) => {
-  if (process.env.ENV === 'prod') {
-    res.sendFile(path.resolve(__dirname, './dist/index.html'));
-  } else {
-    res.redirect('http://localhost:4200');
-  }
-});
+app.get('*', (req, res) =>
+  res.sendFile(path.resolve(__dirname, './dist/index.html'))
+);
 
 io.on('connection', socket => {
   const onlineUsers = roomId => io.sockets.adapter.rooms[roomId].length;
@@ -46,11 +44,17 @@ io.on('connection', socket => {
     socket.broadcast.to(roomId).emit(ONLINE_USERS, onlineUsers(roomId));
   });
 
-  socket.on(CREATE_ROOM, (payload, ackFn) => {
-    // payload.roomId - payload.roomName
-    rooms.push(payload);
-    console.info(rooms);
+  socket.on(LEAVE_ROOM, (roomId, ackFn) => {
+    socket.leave(roomId);
+    ackFn();
   });
+
+  socket.on(CREATE_ROOM, (roomName, ackFn) => {
+    const room = { id: Date.now(), name: roomName };
+    rooms.push(room);
+    ackFn(room);
+  });
+  socket.on(GET_ROOM_LIST, (payload, ackFn) => ackFn(rooms));
 
   socket.on(SAVE_CONTENT, (payload, ackFn) =>
     redisClient
@@ -75,4 +79,4 @@ io.on('connection', socket => {
   });
 });
 
-http.listen(port, () => console.log('listening on *:' + port));
+http.listen(port, () => console.log('server listening on *:' + port));

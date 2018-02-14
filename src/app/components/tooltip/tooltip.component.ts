@@ -1,5 +1,5 @@
 import { Utils } from './../../common/utils';
-import { PointInterface } from './../../interfaces/point.interface';
+import { Point } from './../../interfaces/point.interface';
 import { DirectionConst } from './../../constants/direction.const';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subscription } from 'rxjs/Subscription';
@@ -15,7 +15,8 @@ import {
   ElementRef,
   ViewChild,
   ChangeDetectorRef,
-  OnInit
+  OnInit,
+  OnDestroy
 } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
@@ -24,7 +25,7 @@ import { Observable } from 'rxjs/Observable';
   templateUrl: './tooltip.html',
   styleUrls: ['./tooltip.css']
 })
-export class TooltipComponent implements OnInit, AfterViewInit {
+export class TooltipComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() content = '';
   @Input()
   allowedDirections = new Array<DirectionConst>(
@@ -42,15 +43,15 @@ export class TooltipComponent implements OnInit, AfterViewInit {
   direction: DirectionConst;
 
   private _subscriptions = new Array<Subscription>();
-  private _position$ = new ReplaySubject<PointInterface>();
+  private _position$ = new ReplaySubject<Point>();
 
   constructor(public changeDetectorRef: ChangeDetectorRef) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.direction = this.allowedDirections[0];
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     if (this.trigger === 'click') {
       this._initClickHandlers();
     } else if (this.trigger === 'hover') {
@@ -81,7 +82,13 @@ export class TooltipComponent implements OnInit, AfterViewInit {
 
       this._position$
         .distinctUntilChanged()
-        .subscribe((point: PointInterface) => this._updatePosition(point))
+        .subscribe((point: Point) => this._updatePosition(point))
+    );
+  }
+
+  ngOnDestroy(): void {
+    this._subscriptions.forEach((subscription: Subscription) =>
+      subscription.unsubscribe()
     );
   }
 
@@ -225,7 +232,7 @@ export class TooltipComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private _updatePosition(point: PointInterface): void {
+  private _updatePosition(point: Point): void {
     this.tooltipRef.nativeElement.style.left = `${point.x}px`;
     this.tooltipRef.nativeElement.style.top = `${point.y}px`;
   }

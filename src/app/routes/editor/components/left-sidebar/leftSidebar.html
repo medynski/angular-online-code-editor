@@ -1,7 +1,19 @@
 <div class="left-sidebar">
-  <div tooltip="Online Real-time Collaborative Editor"
-       class="logo">
+  <div class="logo">
     <icon-component name="change_history"
                     size="24"></icon-component>
   </div>
+
+  <ul>
+    <li [class.active]="isCreateActive"
+        (click)="toggleCreateState()"
+        tooltip="Create new editor">
+      <icon-component name="note_add"></icon-component>
+    </li>
+    <li [class.active]="isSearchActive"
+        (click)="toggleSearchState()"
+        tooltip="Find editor">
+      <icon-component name="search"></icon-component>
+    </li>
+  </ul>
 </div>

@@ -1,3 +1,6 @@
+import { FormsModule } from '@angular/forms';
+import { CreateComponent } from './components/list/create/create.component';
+import { SearchComponent } from './components/list/search/search.component';
 import { DocumentComponent } from './components/document/document.component';
 import { ListComponent } from './components/list/list.component';
 import { FooterComponent } from './components/footer/footer.component';
@@ -25,9 +28,11 @@ describe('EditorComponent', () => {
           LeftSidebarComponent,
           FooterComponent,
           ListComponent,
-          DocumentComponent
+          DocumentComponent,
+          SearchComponent,
+          CreateComponent
         ],
-        imports: [RouterTestingModule],
+        imports: [RouterTestingModule, FormsModule],
         providers: [{ provide: SocketService, useValue: socketServiceMock }]
       }).compileComponents();
     })

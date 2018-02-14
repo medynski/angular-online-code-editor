@@ -1,0 +1,9 @@
+<div class="search">
+  <icon-component name="search"
+                  size="18"></icon-component>
+
+  <input [(ngModel)]="query"
+         (keyup.enter)="search()"
+         type="text"
+         placeholder="Find editor...">
+</div>

@@ -1,0 +1,25 @@
+.create {
+  padding: 5px 10px;
+  height: 42px;
+  box-sizing: border-box;
+}
+
+icon-component {
+  position: relative;
+  top: 5px;
+  opacity: 0.5;
+  margin-right: 5px;
+}
+
+input {
+  border: 0px;
+  padding: 5px;
+  border: 1px solid transparent;
+  background-color: #333333;
+  color: #fff;
+  width: 200px;
+}
+
+input:focus {
+  border: 1px solid #007ad3;
+}
