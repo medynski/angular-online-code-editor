@@ -1,5 +1,4 @@
 import { PageNotFoundModule } from './routes/page-not-found/pageNotFound.module';
-import { ListModule } from './routes/list/list.module';
 import { EditorModule } from './routes/editor/editor.module';
 import { EditorComponent } from './routes/editor/editor.component';
 import { RouterModule, Routes } from '@angular/router';
@@ -12,7 +11,6 @@ import { AppComponent } from './app.component';
   imports: [
     BrowserModule,
     EditorModule,
-    ListModule,
     PageNotFoundModule,
     RouterModule.forRoot([])
   ],

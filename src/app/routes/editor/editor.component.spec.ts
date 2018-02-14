@@ -1,5 +1,5 @@
 import { DocumentComponent } from './components/document/document.component';
-import { ListComponent } from './../list/list.component';
+import { ListComponent } from './components/list/list.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { LeftSidebarComponent } from './components/left-sidebar/leftSidebar.component';
 import { LoaderComponent } from './../../components/loader/loader.component';

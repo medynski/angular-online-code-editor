@@ -1,4 +1,4 @@
-import { ListComponent } from './../../../list/list.component';
+import { ListComponent } from './list.component';
 import { TestBed, async } from '@angular/core/testing';
 
 describe('ListComponent', () => {
