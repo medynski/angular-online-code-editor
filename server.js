@@ -13,15 +13,15 @@ app.get('*', (req, res) =>
 );
 
 // app constants and helpers
-const TYPING_INDICATOR = 'typing_indicator';
-const ONLINE_USERS = 'online_users';
-const GET_ONLINE_USERS = 'get_online_users';
-const SAVE_CONTENT = 'save_content';
-const GET_CONTENT = 'get_content';
-const JOIN_ROOM = 'join_room';
-const LEAVE_ROOM = 'leave_room';
-const CREATE_ROOM = 'create_room';
-const GET_ROOM_LIST = 'get_room_list';
+const ACTION_TYPING_INDICATOR = 'typing_indicator';
+const ACTION_ONLINE_USERS = 'online_users';
+const ACTION_GET_ONLINE_USERS = 'get_online_users';
+const ACTION_SAVE_CONTENT = 'save_content';
+const ACTION_GET_CONTENT = 'get_content';
+const ACTION_JOIN_ROOM = 'join_room';
+const ACTION_LEAVE_ROOM = 'leave_room';
+const ACTION_CREATE_ROOM = 'create_room';
+const ACTION_GET_ROOM_LIST = 'get_room_list';
 
 // @TODO: move redis config to a separated configuration file
 const redisConfig = {
@@ -56,19 +56,21 @@ const getRooms = () => redisClient.hgetall('rooms');
 
 // socket connection config
 io.on('connection', socket => {
-  socket.on(GET_ONLINE_USERS, (roomId, ackFn) => ackFn(onlineUsers(roomId)));
+  socket.on(ACTION_GET_ONLINE_USERS, (roomId, ackFn) =>
+    ackFn(onlineUsers(roomId))
+  );
 
-  socket.on(JOIN_ROOM, (roomId, ackFn) => {
+  socket.on(ACTION_JOIN_ROOM, (roomId, ackFn) => {
     socket.join(roomId);
-    socket.broadcast.to(roomId).emit(ONLINE_USERS, onlineUsers(roomId));
+    socket.broadcast.to(roomId).emit(ACTION_ONLINE_USERS, onlineUsers(roomId));
   });
 
-  socket.on(LEAVE_ROOM, (roomId, ackFn) => {
+  socket.on(ACTION_LEAVE_ROOM, (roomId, ackFn) => {
     socket.leave(roomId);
     ackFn();
   });
 
-  socket.on(CREATE_ROOM, async (roomName, ackFn) => {
+  socket.on(ACTION_CREATE_ROOM, async (roomName, ackFn) => {
     const room = {
       id: generateRandomString(),
       name: roomName,
@@ -79,12 +81,12 @@ io.on('connection', socket => {
     ackFn(room);
   });
 
-  socket.on(GET_ROOM_LIST, async (payload, ackFn) => {
+  socket.on(ACTION_GET_ROOM_LIST, async (payload, ackFn) => {
     const rooms = await getRooms();
     ackFn(rooms);
   });
 
-  socket.on(SAVE_CONTENT, async (payload, ackFn) => {
+  socket.on(ACTION_SAVE_CONTENT, async (payload, ackFn) => {
     const room = await redisClient.get(payload.roomId);
 
     if (room) {
@@ -95,22 +97,24 @@ io.on('connection', socket => {
     }
   });
 
-  socket.on(GET_CONTENT, (roomId, ackFn) =>
+  socket.on(ACTION_GET_CONTENT, (roomId, ackFn) =>
     redisClient
       .get(roomId)
       .then(ackFn)
       .catch(() => ackFn(''))
   );
 
-  socket.on(TYPING_INDICATOR, payload =>
-    socket.broadcast.to(payload.roomId).emit(TYPING_INDICATOR, payload.message)
+  socket.on(ACTION_TYPING_INDICATOR, payload =>
+    socket.broadcast
+      .to(payload.roomId)
+      .emit(ACTION_TYPING_INDICATOR, payload.message)
   );
 
   socket.on('disconnect', () => {
     Object.keys(io.sockets.adapter.rooms).forEach(roomId =>
       socket.broadcast
         .to(roomId)
-        .emit(ONLINE_USERS, io.sockets.adapter.rooms[roomId].length)
+        .emit(ACTION_ONLINE_USERS, io.sockets.adapter.rooms[roomId].length)
     );
   });
 });
