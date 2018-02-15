@@ -56,24 +56,26 @@ const getRooms = () => redisClient.hgetall('rooms');
 
 // socket connection config
 io.on('connection', socket => {
-  socket.on(ACTION_GET_ONLINE_USERS, (roomId, ackFn) =>
-    ackFn(onlineUsers(roomId))
+  socket.on(ACTION_GET_ONLINE_USERS, (payload, ackFn) =>
+    ackFn(onlineUsers(payload.roomId))
   );
 
-  socket.on(ACTION_JOIN_ROOM, (roomId, ackFn) => {
-    socket.join(roomId);
-    socket.broadcast.to(roomId).emit(ACTION_ONLINE_USERS, onlineUsers(roomId));
+  socket.on(ACTION_JOIN_ROOM, (payload, ackFn) => {
+    socket.join(payload.roomId);
+    socket.broadcast
+      .to(payload.roomId)
+      .emit(ACTION_ONLINE_USERS, onlineUsers(payload.roomId));
   });
 
-  socket.on(ACTION_LEAVE_ROOM, (roomId, ackFn) => {
-    socket.leave(roomId);
+  socket.on(ACTION_LEAVE_ROOM, (payload, ackFn) => {
+    socket.leave(payload.roomId);
     ackFn();
   });
 
-  socket.on(ACTION_CREATE_ROOM, async (roomName, ackFn) => {
+  socket.on(ACTION_CREATE_ROOM, async (payload, ackFn) => {
     const room = {
       id: generateRandomString(),
-      name: roomName,
+      name: payload.name,
       content: '/* your js code goes here */'
     };
 
@@ -97,9 +99,9 @@ io.on('connection', socket => {
     }
   });
 
-  socket.on(ACTION_GET_CONTENT, (roomId, ackFn) =>
+  socket.on(ACTION_GET_CONTENT, (payload, ackFn) =>
     redisClient
-      .get(roomId)
+      .get(payload.roomId)
       .then(ackFn)
       .catch(() => ackFn(''))
   );

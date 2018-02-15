@@ -36,11 +36,13 @@ export class SocketService {
   }
 
   selectRoom(roomId: string): void {
-    this._emit(ACTION_LEAVE_ROOM, this._roomId, () => this.joinRoom(roomId));
+    this._emit(ACTION_LEAVE_ROOM, { roomId: this._roomId }, () =>
+      this.joinRoom(roomId)
+    );
   }
 
   joinRoom(roomId: string): void {
-    this._emit(ACTION_JOIN_ROOM, roomId);
+    this._emit(ACTION_JOIN_ROOM, { roomId });
     this._roomId = roomId;
   }
 
@@ -58,8 +60,10 @@ export class SocketService {
 
   getContent(): Promise<string> {
     return new Promise((resolve: Function, reject: Function) => {
-      this._emit(ACTION_GET_CONTENT, this._roomId, (response: string) =>
-        resolve(response)
+      this._emit(
+        ACTION_GET_CONTENT,
+        { roomId: this._roomId },
+        (response: string) => resolve(response)
       );
     });
   }
@@ -75,13 +79,15 @@ export class SocketService {
   }
 
   fetchOnlineUsers(): void {
-    this._emit(ACTION_GET_ONLINE_USERS, this._roomId, (onlineUsers: number) =>
-      this.onlineUsers$.next(onlineUsers)
+    this._emit(
+      ACTION_GET_ONLINE_USERS,
+      { roomId: this._roomId },
+      (onlineUsers: number) => this.onlineUsers$.next(onlineUsers)
     );
   }
 
   createRoom(name: string): void {
-    this._emit(ACTION_CREATE_ROOM, name, () => this.fetchRoomList());
+    this._emit(ACTION_CREATE_ROOM, { name }, () => this.fetchRoomList());
   }
 
   fetchRoomList(): void {
@@ -115,7 +121,7 @@ export class SocketService {
 
   private _emit(
     action: string,
-    payload: any,
+    payload: { [key: string]: string },
     callback: Function = () => null
   ): void {
     this._socket.emit(action, payload, callback);
