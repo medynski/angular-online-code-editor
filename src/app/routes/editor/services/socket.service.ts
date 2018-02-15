@@ -20,6 +20,7 @@ const LEAVE_ROOM = 'leave_room';
 interface Rooms {
   readonly id: string;
   readonly name: string;
+  readonly content: string;
 }
 
 export class SocketService {
@@ -80,7 +81,11 @@ export class SocketService {
   }
 
   fetchRoomList(): void {
-    this._emit(GET_ROOM_LIST, {}, rooms => this.rooms$.next(rooms));
+    this._emit(GET_ROOM_LIST, {}, rooms =>
+      this.rooms$.next(
+        Object.keys(rooms).map((key: string) => JSON.parse(rooms[key]))
+      )
+    );
   }
 
   private _openConnection(): void {

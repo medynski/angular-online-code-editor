@@ -6,6 +6,13 @@ const port = process.env.PORT || 3000;
 const path = require('path');
 const redis = require('then-redis');
 
+// express app config
+app.use('/', express.static(path.resolve(__dirname, './dist')));
+app.get('*', (req, res) =>
+  res.sendFile(path.resolve(__dirname, './dist/index.html'))
+);
+
+// app constants and helpers
 const TYPING_INDICATOR = 'typing_indicator';
 const ONLINE_USERS = 'online_users';
 const GET_ONLINE_USERS = 'get_online_users';
@@ -24,20 +31,31 @@ const redisConfig = {
 };
 const redisClient = redis.createClient(redisConfig);
 
-const rooms = [];
+const generateRandomString = (length = 10) => {
+  const possibleCharacters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let output = '';
+  for (let i = 0; i < length; i++) {
+    output += possibleCharacters.charAt(
+      Math.floor(Math.random() * possibleCharacters.length)
+    );
+  }
+  return output;
+};
 
-app.use('/', express.static(path.resolve(__dirname, './dist')));
+const onlineUsers = roomId =>
+  io.sockets.adapter.rooms[roomId] && io.sockets.adapter.rooms[roomId].length
+    ? io.sockets.adapter.rooms[roomId].length
+    : 0;
 
-app.get('*', (req, res) =>
-  res.sendFile(path.resolve(__dirname, './dist/index.html'))
-);
+// database (cache) manipulations
+const createOrUpdateRoom = room =>
+  redisClient.hset('rooms', room.id, JSON.stringify(room));
 
+const getRooms = () => redisClient.hgetall('rooms');
+
+// socket connection config
 io.on('connection', socket => {
-  const onlineUsers = roomId =>
-    io.sockets.adapter.rooms[roomId] && io.sockets.adapter.rooms[roomId].length
-      ? io.sockets.adapter.rooms[roomId].length
-      : 0;
-
   socket.on(GET_ONLINE_USERS, (roomId, ackFn) => ackFn(onlineUsers(roomId)));
 
   socket.on(JOIN_ROOM, (roomId, ackFn) => {
@@ -50,19 +68,32 @@ io.on('connection', socket => {
     ackFn();
   });
 
-  socket.on(CREATE_ROOM, (roomName, ackFn) => {
-    const room = { id: Date.now(), name: roomName };
-    rooms.push(room);
+  socket.on(CREATE_ROOM, async (roomName, ackFn) => {
+    const room = {
+      id: generateRandomString(),
+      name: roomName,
+      content: '/* your js code goes here */'
+    };
+
+    await createOrUpdateRoom(room);
     ackFn(room);
   });
-  socket.on(GET_ROOM_LIST, (payload, ackFn) => ackFn(rooms));
 
-  socket.on(SAVE_CONTENT, (payload, ackFn) =>
-    redisClient
-      .set(payload.roomId, payload.content)
-      .then(ackFn)
-      .catch(ackFn)
-  );
+  socket.on(GET_ROOM_LIST, async (payload, ackFn) => {
+    const rooms = await getRooms();
+    ackFn(rooms);
+  });
+
+  socket.on(SAVE_CONTENT, async (payload, ackFn) => {
+    const room = await redisClient.get(payload.roomId);
+
+    if (room) {
+      redisClient
+        .set(payload.roomId, { ...room, ...{ content: payload.content } })
+        .then(ackFn)
+        .catch(ackFn);
+    }
+  });
 
   socket.on(GET_CONTENT, (roomId, ackFn) =>
     redisClient
@@ -76,7 +107,11 @@ io.on('connection', socket => {
   );
 
   socket.on('disconnect', () => {
-    // socket.broadcast.to(ROOM_ID).emit(ONLINE_USERS, onlineUsers - 1);
+    Object.keys(io.sockets.adapter.rooms).forEach(roomId =>
+      socket.broadcast
+        .to(roomId)
+        .emit(ONLINE_USERS, io.sockets.adapter.rooms[roomId].length)
+    );
   });
 });
 
