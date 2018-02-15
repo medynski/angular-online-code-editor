@@ -24,6 +24,7 @@ const ACTION_LEAVE_ROOM = 'leave_room';
 const ACTION_CREATE_ROOM = 'create_room';
 const ACTION_GET_ROOM_LIST = 'get_room_list';
 const PUSH_ROOM_CREATED = 'push_room_created';
+const PUSH_ROOM_UPDATED = 'push_room_updated';
 
 // @TODO: move redis config to a separated configuration file
 const redisConfig = {
@@ -45,11 +46,15 @@ const generateRandomString = (length = 10) => {
   return output;
 };
 
+const sendPushNotification = (socket, type, payload) => {
+  Object.keys(io.sockets.adapter.rooms).forEach(roomId =>
+    socket.broadcast.to(roomId).emit(type, payload)
+  );
+};
+
 const roomCreatedPush = async socket => {
   const rooms = await getRooms();
-  Object.keys(io.sockets.adapter.rooms).forEach(roomId =>
-    socket.broadcast.to(roomId).emit(PUSH_ROOM_CREATED, rooms)
-  );
+  sendPushNotification(socket, PUSH_ROOM_CREATED, rooms);
 };
 
 const updateOnlineUsers = socket => {
@@ -119,7 +124,10 @@ io.on('connection', socket => {
       };
       redisClient
         .hset(REDIS_ROOMS_KEY, payload.roomId, JSON.stringify(room))
-        .then(() => ackFn(room))
+        .then(() => {
+          ackFn(room);
+          socket.broadcast.to(payload.roomId).emit(PUSH_ROOM_UPDATED, room);
+        })
         .catch(ackFn);
     }
   });

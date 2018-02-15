@@ -19,6 +19,7 @@ const ACTION_CREATE_ROOM = 'create_room';
 const ACTION_GET_ROOM_LIST = 'get_room_list';
 const ACTION_LEAVE_ROOM = 'leave_room';
 const PUSH_ROOM_CREATED = 'push_room_created';
+const PUSH_ROOM_UPDATED = 'push_room_updated';
 
 export class SocketService {
   socketEvents$ = new Observable<string>();
@@ -117,6 +118,9 @@ export class SocketService {
       ),
       Observable.fromEvent(this._socket, PUSH_ROOM_CREATED).subscribe(
         this._parseRooms.bind(this)
+      ),
+      Observable.fromEvent(this._socket, PUSH_ROOM_UPDATED).subscribe(
+        this._updateRoom.bind(this)
       )
     );
   }
