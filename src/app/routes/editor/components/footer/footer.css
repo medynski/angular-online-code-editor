@@ -2,14 +2,29 @@ footer {
   font-size: 10px;
   position: relative;
   color: #fff;
-  text-align: right;
   height: 19px;
   box-sizing: border-box;
 }
 
-footer span {
+footer .right {
+  float: right;
+  text-align: right;
+}
+
+footer .right span {
   position: relative;
   top: -5px;
   margin-right: 10px;
   margin-left: 5px;
+}
+
+footer .left {
+  float: left;
+  margin-left: 10px;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+footer .left strong {
+  color: rgba(255, 255, 255, 1);
 }

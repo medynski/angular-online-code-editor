@@ -3,10 +3,11 @@ import { environment } from './../../../../environments/environment';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Utils } from '../../../common/utils';
+import { Room } from '../interfaces/room.interface';
 import * as io from 'socket.io-client';
 import 'rxjs/add/observable/fromEvent';
-import { Room } from '../interfaces/room.interface';
 
 const ACTION_TYPING_INDICATOR = 'typing_indicator';
 const ACTION_ONLINE_USERS = 'online_users';
@@ -21,7 +22,7 @@ const PUSH_ROOM_CREATED = 'push_room_created';
 
 export class SocketService {
   socketEvents$ = new Observable<string>();
-  onlineUsers$ = new Subject<number>();
+  onlineUsers$ = new ReplaySubject<number>();
   rooms$ = new BehaviorSubject<Array<Room>>(new Array());
   private _socket: any;
   private _subscriptions = new Array<Subscription>();
@@ -51,7 +52,10 @@ export class SocketService {
     this._emit(
       ACTION_SAVE_CONTENT,
       { roomId: this._roomId, content },
-      callback
+      (room: Room) => {
+        this._updateRoom(room);
+        callback();
+      }
     );
   }
 
@@ -123,6 +127,18 @@ export class SocketService {
     callback: Function = () => null
   ): void {
     this._socket.emit(action, payload, callback);
+  }
+
+  private _updateRoom(room: Room): void {
+    const rooms = this.rooms$.value;
+    const index = this.rooms$.value.findIndex(
+      (old: Room) => old.id === room.id
+    );
+
+    if (index !== undefined) {
+      rooms[index] = room;
+      this.rooms$.next(rooms);
+    }
   }
 
   private _parseRooms(rooms: any): void {

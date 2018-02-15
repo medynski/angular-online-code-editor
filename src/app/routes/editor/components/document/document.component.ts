@@ -53,7 +53,7 @@ export class DocumentComponent implements OnInit, OnChanges {
 
   save(): void {
     this.saving = true;
-    this.socketService.saveContent(this.value, () => (this.saving = false));
+    this.socketService.saveContent(this.value, room => (this.saving = false));
   }
 
   private _freezeEditor(): void {

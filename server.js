@@ -89,11 +89,13 @@ io.on('connection', socket => {
   });
 
   socket.on(ACTION_CREATE_ROOM, async (payload, ackFn) => {
+    const now = Date.now();
     const room = {
       id: generateRandomString(),
       name: payload.name,
       content: '/* your js code goes here */',
-      creation_timestamp: Date.now()
+      creation_timestamp: now,
+      last_modified: now
     };
 
     await createOrUpdateRoom(room);
@@ -111,13 +113,13 @@ io.on('connection', socket => {
 
     if (room) {
       room = JSON.parse(room);
+      room = {
+        ...room,
+        ...{ content: payload.content, last_modified: Date.now() }
+      };
       redisClient
-        .hset(
-          REDIS_ROOMS_KEY,
-          payload.roomId,
-          JSON.stringify({ ...room, ...{ content: payload.content } })
-        )
-        .then(ackFn)
+        .hset(REDIS_ROOMS_KEY, payload.roomId, JSON.stringify(room))
+        .then(() => ackFn(room))
         .catch(ackFn);
     }
   });

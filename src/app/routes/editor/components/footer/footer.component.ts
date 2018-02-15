@@ -7,4 +7,6 @@ import { Component, Input } from '@angular/core';
 })
 export class FooterComponent {
   @Input() users: number;
+  @Input() creationTimestamp: number = Date.now();
+  @Input() lastModified: number = Date.now();
 }

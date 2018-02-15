@@ -7,4 +7,7 @@
 
   <document-component [roomId]="roomId"></document-component>
 </div>
-<footer-component [users]="socketService.onlineUsers$ | async"></footer-component>
+<footer-component *ngIf="selectedRoom"
+                  [lastModified]="selectedRoom.last_modified"
+                  [creationTimestamp]="selectedRoom.creation_timestamp"
+                  [users]="socketService.onlineUsers$ | async"></footer-component>

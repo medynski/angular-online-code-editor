@@ -1,5 +1,12 @@
 <footer>
-  <icon-component size="18"
-                  name="supervisor_account"></icon-component>
-  <span>Users online:&nbsp;&nbsp;{{users}}</span>
+  <div class="left">
+    Creation time:
+    <strong>{{creationTimestamp | date:'medium'}}</strong> &nbsp;&nbsp;&nbsp;&nbsp; Last modified:
+    <strong>{{lastModified | date:'medium'}}</strong>
+  </div>
+  <div class="right">
+    <icon-component size="18"
+                    name="supervisor_account"></icon-component>
+    <span>Reading now:&nbsp;&nbsp;{{users}}</span>
+  </div>
 </footer>
