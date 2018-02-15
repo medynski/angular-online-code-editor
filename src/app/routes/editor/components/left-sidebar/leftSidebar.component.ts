@@ -11,13 +11,41 @@ export class LeftSidebarComponent {
   isCreateActive = false;
   isSearchActive = false;
 
-  toggleCreateState(): void {
-    this.isCreateActive = !this.isCreateActive;
+  toggleCreate(): void {
+    if (this.isCreateActive) {
+      this.hideCreate();
+    } else {
+      this.showCreate();
+    }
+  }
+
+  toggleSearch(): void {
+    if (this.isSearchActive) {
+      this.hideSearch();
+    } else {
+      this.showSearch();
+    }
+  }
+
+  showCreate(): void {
+    this.hideSearch();
+    this.isCreateActive = true;
     this.createStateEmitter.next(this.isCreateActive);
   }
 
-  toggleSearchState(): void {
-    this.isSearchActive = !this.isSearchActive;
+  hideCreate(): void {
+    this.isCreateActive = false;
+    this.createStateEmitter.next(this.isCreateActive);
+  }
+
+  showSearch(): void {
+    this.hideCreate();
+    this.isSearchActive = true;
+    this.searchStateEmitter.next(this.isSearchActive);
+  }
+
+  hideSearch(): void {
+    this.isSearchActive = false;
     this.searchStateEmitter.next(this.isSearchActive);
   }
 }
