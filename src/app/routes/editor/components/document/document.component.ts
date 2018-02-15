@@ -2,7 +2,14 @@ import { Observable } from 'rxjs/Observable';
 import { SocketService } from './../../services/socket.service';
 import { MonacoEditorComponent } from './monaco-editor/monacoEditor.component';
 import { Subscription } from 'rxjs/Subscription';
-import { Component, ViewChild } from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChange
+} from '@angular/core';
 import 'rxjs/add/observable/timer';
 import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/finally';
@@ -14,7 +21,8 @@ const FREEZE_TIMEOUT = 2000;
   templateUrl: './document.html',
   styleUrls: ['./document.css']
 })
-export class DocumentComponent {
+export class DocumentComponent implements OnInit, OnChanges {
+  @Input() roomId: string;
   @ViewChild('monacoRef') monacoRef: MonacoEditorComponent;
   value = null;
   readOnly = false;
@@ -22,15 +30,18 @@ export class DocumentComponent {
   private _timer: Subscription = null;
 
   constructor(public socketService: SocketService) {
-    this.socketService
-      .getContent()
-      .then((content: string) => (this.value = content));
-
     this.socketService.socketEvents$.subscribe((event: string) => {
       this._freezeEditor();
-      this.value = event;
-      this.monacoRef.setValue(this.value);
+      this._setValue(event);
     });
+  }
+
+  ngOnInit(): void {
+    this._tryFetchValue();
+  }
+
+  ngOnChanges(changes: any): void {
+    this._tryFetchValue();
   }
 
   handleChanges(nextValue: string) {
@@ -66,5 +77,19 @@ export class DocumentComponent {
     }
 
     setTimer();
+  }
+
+  private _setValue(value: string): void {
+    this.value = value;
+    this.monacoRef.setValue(this.value);
+  }
+
+  private _tryFetchValue(): void {
+    if (this.roomId) {
+      this.socketService
+        .getContent(this.roomId)
+        .then((content: string) => this._setValue(content))
+        .catch(() => (this.value = ''));
+    }
   }
 }

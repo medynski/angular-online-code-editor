@@ -6,6 +6,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Utils } from '../../../common/utils';
 import * as io from 'socket.io-client';
 import 'rxjs/add/observable/fromEvent';
+import { Room } from '../interfaces/room.interface';
 
 const ACTION_TYPING_INDICATOR = 'typing_indicator';
 const ACTION_ONLINE_USERS = 'online_users';
@@ -17,19 +18,13 @@ const ACTION_CREATE_ROOM = 'create_room';
 const ACTION_GET_ROOM_LIST = 'get_room_list';
 const ACTION_LEAVE_ROOM = 'leave_room';
 
-interface Rooms {
-  readonly id: string;
-  readonly name: string;
-  readonly content: string;
-}
-
 export class SocketService {
   socketEvents$ = new Observable<string>();
   onlineUsers$ = new Subject<number>();
-  rooms$ = new BehaviorSubject<Array<Rooms>>(new Array());
+  rooms$ = new BehaviorSubject<Array<Room>>(new Array());
   private _socket: any;
   private _subscription: Subscription;
-  private _roomId = 'code';
+  private _roomId = null;
 
   constructor() {
     this._openConnection();
@@ -58,13 +53,15 @@ export class SocketService {
     );
   }
 
-  getContent(): Promise<string> {
+  getContent(roomId: string): Promise<string> {
     return new Promise((resolve: Function, reject: Function) => {
-      this._emit(
-        ACTION_GET_CONTENT,
-        { roomId: this._roomId },
-        (response: string) => resolve(response)
-      );
+      this._emit(ACTION_GET_CONTENT, { roomId }, (response: Room) => {
+        if (response && response.content) {
+          resolve(response.content);
+        } else {
+          reject();
+        }
+      });
     });
   }
 
@@ -104,7 +101,6 @@ export class SocketService {
       reconnection: true
     });
 
-    this.joinRoom(this._roomId);
     this.fetchOnlineUsers();
     this.fetchRoomList();
 

@@ -44,7 +44,10 @@ export class MonacoEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   setValue(value: string): void {
-    this._editor.getModel().setValue(value);
+    this.value = value;
+    if (this._editor) {
+      this._editor.getModel().setValue(value);
+    }
   }
 
   setReadOnly(readOnly: boolean): void {

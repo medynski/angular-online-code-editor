@@ -13,6 +13,7 @@ app.get('*', (req, res) =>
 );
 
 // app constants and helpers
+const REDIS_ROOMS_KEY = 'rooms';
 const ACTION_TYPING_INDICATOR = 'typing_indicator';
 const ACTION_ONLINE_USERS = 'online_users';
 const ACTION_GET_ONLINE_USERS = 'get_online_users';
@@ -50,9 +51,9 @@ const onlineUsers = roomId =>
 
 // database (cache) manipulations
 const createOrUpdateRoom = room =>
-  redisClient.hset('rooms', room.id, JSON.stringify(room));
+  redisClient.hset(REDIS_ROOMS_KEY, room.id, JSON.stringify(room));
 
-const getRooms = () => redisClient.hgetall('rooms');
+const getRooms = () => redisClient.hgetall(REDIS_ROOMS_KEY);
 
 // socket connection config
 io.on('connection', socket => {
@@ -99,12 +100,14 @@ io.on('connection', socket => {
     }
   });
 
-  socket.on(ACTION_GET_CONTENT, (payload, ackFn) =>
-    redisClient
-      .get(payload.roomId)
-      .then(ackFn)
-      .catch(() => ackFn(''))
-  );
+  socket.on(ACTION_GET_CONTENT, async (payload, ackFn) => {
+    let output;
+    try {
+      const room = await redisClient.hget(REDIS_ROOMS_KEY, payload.roomId);
+      output = JSON.parse(room);
+    } catch (err) {}
+    ackFn(output);
+  });
 
   socket.on(ACTION_TYPING_INDICATOR, payload =>
     socket.broadcast

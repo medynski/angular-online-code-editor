@@ -5,6 +5,6 @@
   <list-component [isCreateActive]="isCreateActive"
                   [isSearchActive]="isSearchActive"></list-component>
 
-  <document-component></document-component>
+  <document-component [roomId]="roomId"></document-component>
 </div>
 <footer-component [users]="socketService.onlineUsers$ | async"></footer-component>
