@@ -127,7 +127,14 @@ export class SocketService {
 
   private _parseRooms(rooms: any): void {
     this.rooms$.next(
-      Object.keys(rooms).map((key: string) => JSON.parse(rooms[key]))
+      Object.keys(rooms)
+        .map((key: string) => JSON.parse(rooms[key]))
+        .sort(
+          (prev: Room, next: Room) =>
+            prev.creation_timestamp < next.creation_timestamp
+              ? -1
+              : prev.creation_timestamp > next.creation_timestamp ? 1 : 0
+        )
     );
   }
 }

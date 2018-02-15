@@ -92,7 +92,8 @@ io.on('connection', socket => {
     const room = {
       id: generateRandomString(),
       name: payload.name,
-      content: '/* your js code goes here */'
+      content: '/* your js code goes here */',
+      creation_timestamp: Date.now()
     };
 
     await createOrUpdateRoom(room);
@@ -102,7 +103,7 @@ io.on('connection', socket => {
 
   socket.on(ACTION_GET_ROOM_LIST, async (payload, ackFn) => {
     const rooms = await getRooms();
-    ackFn(rooms);
+    ackFn(rooms || {});
   });
 
   socket.on(ACTION_SAVE_CONTENT, async (payload, ackFn) => {
