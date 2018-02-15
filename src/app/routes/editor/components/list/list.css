@@ -19,6 +19,8 @@
 ul {
   padding: 8px 20px;
   font-size: 12px;
+  overflow: auto;
+  height: calc(100% - 40px);
 }
 
 ul li {

@@ -23,6 +23,7 @@ const ACTION_JOIN_ROOM = 'join_room';
 const ACTION_LEAVE_ROOM = 'leave_room';
 const ACTION_CREATE_ROOM = 'create_room';
 const ACTION_GET_ROOM_LIST = 'get_room_list';
+const PUSH_ROOM_CREATED = 'push_room_created';
 
 // @TODO: move redis config to a separated configuration file
 const redisConfig = {
@@ -44,6 +45,21 @@ const generateRandomString = (length = 10) => {
   return output;
 };
 
+const roomCreatedPush = async socket => {
+  const rooms = await getRooms();
+  Object.keys(io.sockets.adapter.rooms).forEach(roomId =>
+    socket.broadcast.to(roomId).emit(PUSH_ROOM_CREATED, rooms)
+  );
+};
+
+const updateOnlineUsers = socket => {
+  Object.keys(io.sockets.adapter.rooms).forEach(roomId =>
+    socket.broadcast
+      .to(roomId)
+      .emit(ACTION_ONLINE_USERS, io.sockets.adapter.rooms[roomId].length)
+  );
+};
+
 const onlineUsers = roomId =>
   io.sockets.adapter.rooms[roomId] && io.sockets.adapter.rooms[roomId].length
     ? io.sockets.adapter.rooms[roomId].length
@@ -63,13 +79,12 @@ io.on('connection', socket => {
 
   socket.on(ACTION_JOIN_ROOM, (payload, ackFn) => {
     socket.join(payload.roomId);
-    socket.broadcast
-      .to(payload.roomId)
-      .emit(ACTION_ONLINE_USERS, onlineUsers(payload.roomId));
+    updateOnlineUsers(socket);
   });
 
   socket.on(ACTION_LEAVE_ROOM, (payload, ackFn) => {
     socket.leave(payload.roomId);
+    updateOnlineUsers(socket);
     ackFn();
   });
 
@@ -82,6 +97,7 @@ io.on('connection', socket => {
 
     await createOrUpdateRoom(room);
     ackFn(room);
+    roomCreatedPush(socket);
   });
 
   socket.on(ACTION_GET_ROOM_LIST, async (payload, ackFn) => {
@@ -90,11 +106,16 @@ io.on('connection', socket => {
   });
 
   socket.on(ACTION_SAVE_CONTENT, async (payload, ackFn) => {
-    const room = await redisClient.get(payload.roomId);
+    let room = await redisClient.hget(REDIS_ROOMS_KEY, payload.roomId);
 
     if (room) {
+      room = JSON.parse(room);
       redisClient
-        .set(payload.roomId, { ...room, ...{ content: payload.content } })
+        .hset(
+          REDIS_ROOMS_KEY,
+          payload.roomId,
+          JSON.stringify({ ...room, ...{ content: payload.content } })
+        )
         .then(ackFn)
         .catch(ackFn);
     }
@@ -115,13 +136,7 @@ io.on('connection', socket => {
       .emit(ACTION_TYPING_INDICATOR, payload.message)
   );
 
-  socket.on('disconnect', () => {
-    Object.keys(io.sockets.adapter.rooms).forEach(roomId =>
-      socket.broadcast
-        .to(roomId)
-        .emit(ACTION_ONLINE_USERS, io.sockets.adapter.rooms[roomId].length)
-    );
-  });
+  socket.on('disconnect', () => {});
 });
 
 http.listen(port, () => console.log('server listening on *:' + port));

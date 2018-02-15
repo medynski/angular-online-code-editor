@@ -17,13 +17,14 @@ const ACTION_JOIN_ROOM = 'join_room';
 const ACTION_CREATE_ROOM = 'create_room';
 const ACTION_GET_ROOM_LIST = 'get_room_list';
 const ACTION_LEAVE_ROOM = 'leave_room';
+const PUSH_ROOM_CREATED = 'push_room_created';
 
 export class SocketService {
   socketEvents$ = new Observable<string>();
   onlineUsers$ = new Subject<number>();
   rooms$ = new BehaviorSubject<Array<Room>>(new Array());
   private _socket: any;
-  private _subscription: Subscription;
+  private _subscriptions = new Array<Subscription>();
   private _roomId = null;
 
   constructor() {
@@ -37,8 +38,9 @@ export class SocketService {
   }
 
   joinRoom(roomId: string): void {
-    this._emit(ACTION_JOIN_ROOM, { roomId });
     this._roomId = roomId;
+    this._emit(ACTION_JOIN_ROOM, { roomId });
+    this.fetchOnlineUsers();
   }
 
   sendTypingIndicator(message: string): void {
@@ -66,9 +68,9 @@ export class SocketService {
   }
 
   closeConnection(): void {
-    if (this._subscription) {
-      this._subscription.unsubscribe();
-    }
+    this._subscriptions.forEach((subscription: Subscription) =>
+      subscription.unsubscribe()
+    );
 
     if (this._socket.connected) {
       this._socket.disconnect();
@@ -84,15 +86,11 @@ export class SocketService {
   }
 
   createRoom(name: string): void {
-    this._emit(ACTION_CREATE_ROOM, { name }, () => this.fetchRoomList());
+    this._emit(ACTION_CREATE_ROOM, { name }, this.fetchRoomList.bind(this));
   }
 
   fetchRoomList(): void {
-    this._emit(ACTION_GET_ROOM_LIST, {}, rooms =>
-      this.rooms$.next(
-        Object.keys(rooms).map((key: string) => JSON.parse(rooms[key]))
-      )
-    );
+    this._emit(ACTION_GET_ROOM_LIST, {}, this._parseRooms.bind(this));
   }
 
   private _openConnection(): void {
@@ -109,10 +107,14 @@ export class SocketService {
       this._socket,
       ACTION_TYPING_INDICATOR
     );
-    this._subscription = Observable.fromEvent(
-      this._socket,
-      ACTION_ONLINE_USERS
-    ).subscribe((onlineUsers: number) => this.onlineUsers$.next(onlineUsers));
+    this._subscriptions.push(
+      Observable.fromEvent(this._socket, ACTION_ONLINE_USERS).subscribe(
+        (onlineUsers: number) => this.onlineUsers$.next(onlineUsers)
+      ),
+      Observable.fromEvent(this._socket, PUSH_ROOM_CREATED).subscribe(
+        this._parseRooms.bind(this)
+      )
+    );
   }
 
   private _emit(
@@ -121,5 +123,11 @@ export class SocketService {
     callback: Function = () => null
   ): void {
     this._socket.emit(action, payload, callback);
+  }
+
+  private _parseRooms(rooms: any): void {
+    this.rooms$.next(
+      Object.keys(rooms).map((key: string) => JSON.parse(rooms[key]))
+    );
   }
 }
