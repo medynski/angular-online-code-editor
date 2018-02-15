@@ -8,6 +8,10 @@
 
   <ul>
     <li *ngFor="let item of socketService.rooms$ | async"
-        routerLink="/room/{{item.id}}">{{item.name}}</li>
+        routerLink="/room/{{item.id}}"
+        routerLinkActive="active">
+      <icon-component name="insert_drive_file"
+                      size="18"></icon-component>
+      {{item.name}}</li>
   </ul>
 </div>

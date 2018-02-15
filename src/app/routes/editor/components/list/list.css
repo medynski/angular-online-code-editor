@@ -15,3 +15,37 @@
   font-weight: bold;
   letter-spacing: 0.1em;
 }
+
+ul {
+  padding: 8px 20px;
+  font-size: 12px;
+}
+
+ul li {
+  opacity: 0.5;
+  padding: 1px 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  white-space: nowrap;
+}
+
+ul li:hover {
+  opacity: 0.7;
+}
+
+ul li.active {
+  opacity: 1;
+}
+
+ul li.active icon-component {
+  color: #c79446;
+}
+
+ul li icon-component {
+  opacity: 0.7;
+  position: relative;
+  top: 4px;
+  margin-right: 3px;
+}
