@@ -31,10 +31,12 @@
   padding: 10px 0;
   box-sizing: border-box;
   cursor: pointer;
+  opacity: 0.5;
 }
 
 .left-sidebar ul li.active {
   color: #007ad3;
+  opacity: 1 !important;
 }
 
 .left-sidebar ul li:hover {

@@ -22,3 +22,7 @@ ul {
 ul li {
   display: block;
 }
+
+.hidden {
+  display: none !important;
+}
