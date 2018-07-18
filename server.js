@@ -151,3 +151,7 @@ io.on('connection', socket => {
 });
 
 http.listen(port, () => console.log('server listening on *:' + port));
+
+redisClient.on('error', err => {
+  console.log('Redis error: ' + err);
+});
